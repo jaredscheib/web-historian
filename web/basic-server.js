@@ -9,3 +9,6 @@ var server = http.createServer(handler.handleRequest);
 console.log("Listening on http://%d:%d",ip, port);
 server.listen(port, ip);
 
+// for testing http.get for downloadUrl
+// var archive = require('../helpers/archive-helpers');
+// archive.downloadUrls();

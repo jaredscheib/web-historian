@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
 var serveAssets = require('../web/http-helpers.js').serveAssets;
+var http = require('request');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -69,7 +70,7 @@ exports.addUrlToList = addUrlToList = function(response, targetUrl){
 };
 
 exports.deleteUrlFromList = deleteUrlFromList = function(){
-  // cron only, after archive (scrape) end
+  // cron only, after archive (scrape) end, if ever
 };
 
 exports.isUrlArchived = isUrlArchived = function(response, targetUrl){
@@ -95,4 +96,34 @@ exports.isUrlArchived = isUrlArchived = function(response, targetUrl){
 
 exports.downloadUrls = downloadUrls = function(){
   // cron only
+  // *** not fully functional yet
+
+  var hash = {};
+  var arraySitesList = fs.readFileSync(paths.list, 'utf-8').split('\n');
+  var arraySitesLen = arraySitesList.length;
+  var arrayArchiveList = fs.readdirSync(paths.archivedSites);
+  var arrayArchiveLen = arrayArchiveList.length;
+  console.log('***** \n', arraySitesList, arrayArchiveList);
+
+  //create hash of archived sites
+  for( var i = 0; i < arrayArchiveLen; i++ ){
+    hash[arrayArchiveList[i]] = true;
+  }
+
+  for (var j = 0; j < arraySitesLen; j++) {
+    if ( !arrayArchiveList[arraySitesList[j]]) {
+      //scrape using request
+
+      http.get(arraySitesList[j], function (err, res) {
+        if (err) { throw err; }
+        fs.appendFile(paths.archivedSites.concat('/')[arraySitesList[j]], res.buffer.toString(), 'utf-8', function(err){
+          if( err ) throw err;
+          //serve up loading.html
+          // console.log('***** isUrlInList === false, so serve loading.html');
+          console.log('checking scraped data: ', res.buffer.toString());
+          console.log('successfully wrote ', arraySitesList[j]);
+        });
+      });
+    }
+  }
 };
